@@ -1,0 +1,32 @@
+# Gain scaling - < 1.0 will decrease volume while > 1.0 will increase volume.
+[master]
+gain=0.5
+
+# HPF and LPF filters
+[[hpf]]
+freq=60.0
+[[lpf]]
+freq=500.0
+
+# Shelving filters - like the tone controls on an amp or guitar pedal.
+# Don't change the frequency unless you really want to.
+[[lowshelf]]
+freq=400.0
+gain=0.0
+[[highshelf]]
+freq=5000.0
+gain=0.0
+
+# Peaking filters - using constant q so these sound reasonable at various gain settings.
+[[parametric]]
+freq=50.0
+gain=-6.0
+q=1.0
+[[parametric]]
+freq=100.0
+gain=3.0
+q=1.0
+[[parametric]]
+freq=16000.0
+gain=24.0
+q=1.0
