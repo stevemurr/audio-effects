@@ -44,7 +44,13 @@ func process(w *wav.Reader, fx []filter.Filter, bitDepth float64, channels uint1
 			filtered := processSample(w.FloatValue(sample, 0), fx, bitDepth, 0)
 			filtered *= gain
 			y.Values[0] = int(filtered * math.Pow(2, bitDepth))
-			y.Values[1] = y.Values[0]
+			if channels == 2 {
+				filtered = processSample(w.FloatValue(sample, 1), fx, bitDepth, 1)
+				filtered *= gain
+				y.Values[1] = int(filtered * math.Pow(2, bitDepth))
+			} else {
+				y.Values[1] = y.Values[0]
+			}
 			*results = append(*results, y)
 		}
 	}
@@ -61,26 +67,26 @@ type config struct {
 	LPF        []*lpf.LPF
 }
 
-func parseConfig(c config) []filter.Filter {
+func parseConfig(c config, rate float64) []filter.Filter {
 	fx := []filter.Filter{}
 	for _, filt := range c.Parametric {
-		filt.UpdateCoefficients(*inRate)
+		filt.UpdateCoefficients(rate)
 		fx = append(fx, filt)
 	}
 	for _, filt := range c.LowShelf {
-		filt.UpdateCoefficients(*inRate)
+		filt.UpdateCoefficients(rate)
 		fx = append(fx, filt)
 	}
 	for _, filt := range c.HighShelf {
-		filt.UpdateCoefficients(*inRate)
+		filt.UpdateCoefficients(rate)
 		fx = append(fx, filt)
 	}
 	for _, filt := range c.HPF {
-		filt.UpdateCoefficients(*inRate)
+		filt.UpdateCoefficients(rate)
 		fx = append(fx, filt)
 	}
 	for _, filt := range c.LPF {
-		filt.UpdateCoefficients(*inRate)
+		filt.UpdateCoefficients(rate)
 		fx = append(fx, filt)
 	}
 	return fx
@@ -98,13 +104,13 @@ func readConfig(val interface{}) error {
 	return nil
 }
 
-func writeWav(outFile string, results []wav.Sample, inRate float64, inDepth int) {
+func writeWav(outFile string, results []wav.Sample, inRate float64, inDepth int, channels uint16) {
 	out, err := os.Create(outFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer out.Close()
-	wr := wav.NewWriter(out, uint32(len(results)), 1, uint32(inRate), uint16(inDepth))
+	wr := wav.NewWriter(out, uint32(len(results)), channels, uint32(inRate), uint16(inDepth))
 	wr.WriteSamples(results)
 }
 
@@ -119,14 +125,13 @@ func main() {
 	if err := readConfig(&c); err != nil {
 		panic(err)
 	}
-	fx := parseConfig(c)
+	fx := parseConfig(c, *inRate)
 	w := wav.NewReader(f)
 	format, err := w.Format()
 	if err != nil {
 		log.Fatal(err)
 	}
 	results := &[]wav.Sample{}
-
 	process(w, fx, float64(*inDepth), format.NumChannels, c.Master.Gain, results)
-	writeWav(*outFile, *results, *inRate, *inDepth)
+	writeWav(*outFile, *results, *inRate, *inDepth, format.NumChannels)
 }

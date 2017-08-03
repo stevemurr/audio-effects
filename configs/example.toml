@@ -6,7 +6,7 @@ gain=0.5
 [[hpf]]
 freq=60.0
 [[lpf]]
-freq=500.0
+freq=5000.0
 
 # Shelving filters - like the tone controls on an amp or guitar pedal.
 # Don't change the frequency unless you really want to.
@@ -20,13 +20,13 @@ gain=0.0
 # Peaking filters - using constant q so these sound reasonable at various gain settings.
 [[parametric]]
 freq=50.0
-gain=-6.0
+gain=-3.0
 q=1.0
 [[parametric]]
-freq=100.0
+freq=80.0
 gain=3.0
 q=1.0
 [[parametric]]
-freq=16000.0
-gain=24.0
+freq=5000.0
+gain=3.0
 q=1.0
